@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alias Game</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin: 15px 0;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+        }
+        .modal-content {
+            background: white;
+            color: #333;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 300px;
+            margin: 100px auto;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 Alias</h1>
+        <button class="btn" onclick="showCreateRoomModal()">Создать комнату</button>
+        <button class="btn" onclick="showJoinRoomModal()">Войти в комнату</button>
+    </div>
+
+    <!-- Модальное окно создания комнаты -->
+    <div id="createRoomModal" class="modal">
+        <div class="modal-content">
+            <h3>Создать комнату</h3>
+            <select id="difficulty">
+                <option value="easy">Легкий</option>
+                <option value="medium" selected>Средний</option>
+                <option value="hard">Сложный</option>
+            </select>
+            <button class="btn" onclick="createRoom()">Создать</button>
+            <button class="btn" onclick="closeModal('createRoomModal')">Отмена</button>
+        </div>
+    </div>
+
+    <!-- Модальное окно входа в комнату -->
+    <div id="joinRoomModal" class="modal">
+        <div class="modal-content">
+            <h3>Войти в комнату</h3>
+            <input type="text" id="roomId" placeholder="ID комнаты" maxlength="6">
+            <select id="teamSelect">
+                <option value="A">Команда A</option>
+                <option value="B">Команда B</option>
+            </select>
+            <button class="btn" onclick="joinRoom()">Войти</button>
+            <button class="btn" onclick="closeModal('joinRoomModal')">Отмена</button>
+        </div>
+    </div>
+
+    <script>
+        let tg = window.Telegram.WebApp;
+        tg.expand();
+        tg.MainButton.setText("Вернуться в меню");
+        
+        // Получаем данные пользователя из Telegram
+        const user = tg.initDataUnsafe.user;
+        
+        function showCreateRoomModal() {
+            document.getElementById('createRoomModal').style.display = 'block';
+        }
+        
+        function showJoinRoomModal() {
+            document.getElementById('joinRoomModal').style.display = 'block';
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+        
+        async function createRoom() {
+            const difficulty = document.getElementById('difficulty').value;
+            
+            const response = await fetch('/api/create-room/', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    user_id: user.id,
+                    username: user.username || user.first_name,
+                    difficulty: difficulty
+                })
+            });
+            
+            const data = await response.json();
+            if (data.success) {
+                window.location.href = `/room/${data.room_id}/`;
+            } else {
+                alert('Ошибка: ' + data.error);
+            }
+        }
+        
+        async function joinRoom() {
+            const roomId = document.getElementById('roomId').value.toUpperCase();
+            const team = document.getElementById('teamSelect').value;
+            
+            const response = await fetch('/api/join-room/', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    room_id: roomId,
+                    user_id: user.id,
+                    username: user.username || user.first_name,
+                    team: team
+                })
+            });
+            
+            const data = await response.json();
+            if (data.success) {
+                window.location.href = `/room/${roomId}/`;
+            } else {
+                alert('Ошибка: ' + data.error);
+            }
+        }
+        
+        // Закрытие модальных окон по клику вне их
+        window.onclick = function(event) {
+            if (event.target.className === 'modal') {
+                event.target.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
