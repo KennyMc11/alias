@@ -1,51 +1,66 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Alias Game</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            max-width: 400px;
-            margin: 0 auto;
-            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             color: white;
+            padding: 20px;
         }
+
         .container {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
         }
+
         h1 {
             text-align: center;
             margin-bottom: 40px;
             font-size: 2.5em;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
         }
+
         .btn {
             display: block;
             width: 100%;
-            padding: 15px;
+            padding: 15px 20px;
             margin: 15px 0;
             background: rgba(255, 255, 255, 0.2);
-            border: none;
-            border-radius: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
             color: white;
             font-size: 1.2em;
+            font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
             text-align: center;
+            text-decoration: none;
         }
+
         .btn:hover {
             background: rgba(255, 255, 255, 0.3);
             transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
         .modal {
             display: none;
             position: fixed;
@@ -53,130 +68,347 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
         }
+
+        .modal.active {
+            display: flex;
+        }
+
         .modal-content {
             background: white;
             color: #333;
             padding: 30px;
-            border-radius: 15px;
-            max-width: 300px;
-            margin: 100px auto;
+            border-radius: 20px;
+            max-width: 350px;
+            width: 90%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
         }
-        input, select {
+
+        .modal-title {
+            color: #667eea;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        input,
+        select {
             width: 100%;
-            padding: 10px;
+            padding: 12px 15px;
             margin: 10px 0;
-            border: 1px solid #ddd;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn-primary {
+            flex: 1;
+            background: #667eea;
+            border: none;
+        }
+
+        .btn-secondary {
+            flex: 1;
+            background: #6c757d;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background: #5a67d8;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .room-id {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+
+        .error {
+            color: #ff6b6b;
+            text-align: center;
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(255, 107, 107, 0.1);
             border-radius: 5px;
+            display: none;
+        }
+
+        .success {
+            color: #51cf66;
+            text-align: center;
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(81, 207, 102, 0.1);
+            border-radius: 5px;
+            display: none;
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h1>🎮 Alias</h1>
-        <button class="btn" onclick="showCreateRoomModal()">Создать комнату</button>
-        <button class="btn" onclick="showJoinRoomModal()">Войти в комнату</button>
+
+        <button class="btn" onclick="showCreateRoomModal()">
+            🏠 Создать комнату
+        </button>
+
+        <button class="btn" onclick="showJoinRoomModal()">
+            🔑 Войти в комнату
+        </button>
+
+        <div class="error" id="errorMessage"></div>
+        <div class="success" id="successMessage"></div>
     </div>
 
     <!-- Модальное окно создания комнаты -->
     <div id="createRoomModal" class="modal">
         <div class="modal-content">
-            <h3>Создать комнату</h3>
+            <h3 class="modal-title">Создать комнату</h3>
             <select id="difficulty">
-                <option value="easy">Легкий</option>
-                <option value="medium" selected>Средний</option>
-                <option value="hard">Сложный</option>
+                <option value="easy">🎯 Легкий</option>
+                <option value="medium" selected>🎯 Средний</option>
+                <option value="hard">🎯 Сложный</option>
             </select>
-            <button class="btn" onclick="createRoom()">Создать</button>
-            <button class="btn" onclick="closeModal('createRoomModal')">Отмена</button>
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="createRoom()">
+                    Создать
+                </button>
+                <button class="btn btn-secondary" onclick="closeModal('createRoomModal')">
+                    Отмена
+                </button>
+            </div>
         </div>
     </div>
 
     <!-- Модальное окно входа в комнату -->
     <div id="joinRoomModal" class="modal">
         <div class="modal-content">
-            <h3>Войти в комнату</h3>
-            <input type="text" id="roomId" placeholder="ID комнаты" maxlength="6">
-            <select id="teamSelect">
-                <option value="A">Команда A</option>
-                <option value="B">Команда B</option>
-            </select>
-            <button class="btn" onclick="joinRoom()">Войти</button>
-            <button class="btn" onclick="closeModal('joinRoomModal')">Отмена</button>
+            <h3 class="modal-title">Войти в комнату</h3>
+            <input type="text" id="roomId" placeholder="Введите ID комнаты" maxlength="6"
+                style="text-transform: uppercase">
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="joinRoom()">
+                    Войти
+                </button>
+                <button class="btn btn-secondary" onclick="closeModal('joinRoomModal')">
+                    Отмена
+                </button>
+            </div>
         </div>
     </div>
 
     <script>
+        // Инициализация Telegram Web App
         let tg = window.Telegram.WebApp;
-        tg.expand();
-        tg.MainButton.setText("Вернуться в меню");
-        
+        tg.expand(); // Раскрываем на весь экран
+        tg.MainButton.hide(); // Скрываем основную кнопку
+
         // Получаем данные пользователя из Telegram
-        const user = tg.initDataUnsafe.user;
-        
+        const user = tg.initDataUnsafe?.user;
+        let currentUser = null;
+
+        if (user) {
+            currentUser = {
+                id: user.id,
+                username: user.username || `User${user.id}`,
+                firstName: user.first_name || '',
+                lastName: user.last_name || ''
+            };
+            console.log('Пользователь Telegram:', currentUser);
+        } else {
+            // Для тестирования без Telegram
+            currentUser = {
+                id: Date.now(),
+                username: 'TestUser',
+                firstName: 'Тестовый',
+                lastName: 'Пользователь'
+            };
+            console.log('Тестовый пользователь:', currentUser);
+        }
+
+        // Функции для работы с модальными окнами
         function showCreateRoomModal() {
-            document.getElementById('createRoomModal').style.display = 'block';
+            document.getElementById('createRoomModal').classList.add('active');
         }
-        
+
         function showJoinRoomModal() {
-            document.getElementById('joinRoomModal').style.display = 'block';
+            document.getElementById('joinRoomModal').classList.add('active');
+            document.getElementById('roomId').focus();
         }
-        
+
         function closeModal(modalId) {
-            document.getElementById(modalId).style.display = 'none';
+            document.getElementById(modalId).classList.remove('active');
+            hideMessages();
         }
-        
+
+        function showError(message) {
+            const errorEl = document.getElementById('errorMessage');
+            errorEl.textContent = message;
+            errorEl.style.display = 'block';
+            setTimeout(hideMessages, 5000);
+        }
+
+        function showSuccess(message) {
+            const successEl = document.getElementById('successMessage');
+            successEl.textContent = message;
+            successEl.style.display = 'block';
+            setTimeout(hideMessages, 3000);
+        }
+
+        function hideMessages() {
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('successMessage').style.display = 'none';
+        }
+
+        // Функция создания комнаты
         async function createRoom() {
             const difficulty = document.getElementById('difficulty').value;
-            
-            const response = await fetch('/api/create-room/', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    user_id: user.id,
-                    username: user.username || user.first_name,
-                    difficulty: difficulty
-                })
+
+            // Проверяем данные пользователя
+            if (!currentUser || !currentUser.id) {
+                showError('Не удалось получить данные пользователя');
+                return;
+            }
+
+            console.log('Создание комнаты с данными:', {
+                user_id: currentUser.id,
+                username: currentUser.username,
+                difficulty: difficulty
             });
-            
-            const data = await response.json();
-            if (data.success) {
-                window.location.href = `/room/${data.room_id}/`;
-            } else {
-                alert('Ошибка: ' + data.error);
+
+            try {
+                const response = await fetch('/api/create-room/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        user_id: currentUser.id,
+                        username: currentUser.username,
+                        difficulty: difficulty
+                    })
+                });
+
+                console.log('Ответ сервера:', response);
+
+                const data = await response.json();
+                console.log('Данные ответа:', data);
+
+                if (data.success) {
+                    closeModal('createRoomModal');
+                    showSuccess('Комната создана! Перенаправляем...');
+
+                    // Перенаправляем в комнату через 1 секунду
+                    setTimeout(() => {
+                        console.log('Перенаправление в комнату:', data.room_id);
+                        window.location.href = `/room/${data.room_id}/`;
+                    }, 1000);
+                } else {
+                    showError('Ошибка: ' + (data.error || 'Неизвестная ошибка'));
+                }
+            } catch (error) {
+                console.error('Ошибка при создании комнаты:', error);
+                showError('Ошибка сети: ' + error.message);
             }
         }
-        
+
+        // Функция входа в комнату
         async function joinRoom() {
-            const roomId = document.getElementById('roomId').value.toUpperCase();
-            const team = document.getElementById('teamSelect').value;
-            
-            const response = await fetch('/api/join-room/', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    room_id: roomId,
-                    user_id: user.id,
-                    username: user.username || user.first_name,
-                    team: team
-                })
-            });
-            
-            const data = await response.json();
-            if (data.success) {
-                window.location.href = `/room/${roomId}/`;
-            } else {
-                alert('Ошибка: ' + data.error);
+            const roomId = document.getElementById('roomId').value.toUpperCase().trim();
+
+            if (!roomId || roomId.length !== 6) {
+                showError('Введите корректный ID комнаты (6 символов)');
+                return;
+            }
+
+            try {
+                // Сначала проверяем существование комнаты
+                const checkResponse = await fetch(`/api/room/${roomId}/`);
+                const checkData = await checkResponse.json();
+
+                if (!checkData.success) {
+                    showError('Комната не найдена');
+                    return;
+                }
+
+                // Затем присоединяемся (без команды)
+                const joinResponse = await fetch('/api/join-room/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        room_id: roomId,
+                        user_id: currentUser.id,
+                        username: currentUser.username
+                    })
+                });
+
+                const joinData = await joinResponse.json();
+
+                if (joinData.success) {
+                    closeModal('joinRoomModal');
+                    showSuccess('Комната найдена! Перенаправляем...');
+
+                    // Перенаправляем в комнату через 1 секунду
+                    setTimeout(() => {
+                        window.location.href = `/room/${roomId}/`;
+                    }, 1000);
+                } else {
+                    showError('Ошибка: ' + (joinData.error || 'Неизвестная ошибка'));
+                }
+            } catch (error) {
+                showError('Ошибка сети: ' + error.message);
             }
         }
-        
+
+        // Закрытие модальных окон по ESC
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape') {
+                closeModal('createRoomModal');
+                closeModal('joinRoomModal');
+            }
+        });
+
         // Закрытие модальных окон по клику вне их
-        window.onclick = function(event) {
-            if (event.target.className === 'modal') {
-                event.target.style.display = 'none';
+        window.addEventListener('click', function (event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('active');
+                hideMessages();
             }
-        }
+        });
+
+        // Автофокус на поле ввода при открытии модального окна
+        document.getElementById('roomId').addEventListener('input', function (e) {
+            this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+        });
     </script>
 </body>
+
 </html>
