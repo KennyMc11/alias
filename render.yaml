@@ -2,37 +2,21 @@ services:
   - type: web
     name: alias-game
     env: python
-    buildCommand: |
-      pip install --upgrade pip
-      pip install -r requirements.txt
-      python manage.py collectstatic --noinput
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
     startCommand: gunicorn alias_game.wsgi:application
     envVars:
       - key: DATABASE_URL
         fromDatabase:
           name: alias-db
           property: connectionString
-      - key: REDIS_URL
-        fromService:
-          name: alias-redis
-          type: redis
-          property: connectionString
       - key: SECRET_KEY
         generateValue: true
       - key: DEBUG
         value: "False"
-      - key: ALLOWED_HOSTS
-        value: "alias-game.onrender.com,localhost,127.0.0.1"
-      - key: CSRF_TRUSTED_ORIGINS
-        value: "https://alias-game.onrender.com"
       - key: TELEGRAM_BOT_TOKEN
         sync: false
-      - key: WEB_CONCURRENCY
-        value: "2"
     healthCheckPath: /
     autoDeploy: true
-    domains:
-      - alias-game.onrender.com
 
   - type: worker
     name: alias-bot
@@ -52,8 +36,4 @@ databases:
   - name: alias-db
     databaseName: alias_game
     user: alias_user
-    plan: free
-
-redis:
-  - name: alias-redis
     plan: free
