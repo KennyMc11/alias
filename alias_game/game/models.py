@@ -1,7 +1,7 @@
-# game/models.py
 from django.db import models
 import string
 import random
+import json
 
 def generate_room_id():
     return ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
@@ -18,23 +18,22 @@ class GameRoom(models.Model):
     creator_name = models.CharField(max_length=100)
     difficulty = models.CharField(max_length=10, choices=DIFFICULTY_CHOICES, default='medium')
     is_active = models.BooleanField(default=True)
-    is_game_started = models.BooleanField(default=False)  # Добавлено
-    current_round = models.IntegerField(default=1)  # Добавлено
-    current_team = models.CharField(max_length=1, choices=[('A', 'Команда A'), ('B', 'Команда B')], default='A')  # Добавлено
-    current_explainer_index = models.IntegerField(default=0)  # Добавлено
-    current_guesser_index = models.IntegerField(default=1)  # Добавлено
-    words_used = models.TextField(default='[]')  # Добавлено
-    score_a = models.IntegerField(default=0)  # Добавлено
-    score_b = models.IntegerField(default=0)  # Добавлено
-    target_score = models.IntegerField(default=25)  # Добавлено
-    time_per_turn = models.IntegerField(default=60)  # Добавлено
+    is_game_started = models.BooleanField(default=False)
+    current_round = models.IntegerField(default=1)
+    current_team = models.CharField(max_length=1, choices=[('A', 'Команда A'), ('B', 'Команда B')], default='A')
+    current_explainer_index = models.IntegerField(default=0)
+    current_guesser_index = models.IntegerField(default=1)
+    words_used = models.TextField(default='[]')
+    score_a = models.IntegerField(default=0)
+    score_b = models.IntegerField(default=0)
+    target_score = models.IntegerField(default=25)
+    time_per_turn = models.IntegerField(default=60)
     created_at = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
         return f"Комната {self.room_id}"
     
     def get_current_players(self):
-        """Получить текущих объясняющего и угадывающего"""
         team_players = list(self.players.filter(team=self.current_team).order_by('id'))
         
         if not team_players:

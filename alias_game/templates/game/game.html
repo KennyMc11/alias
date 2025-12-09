@@ -1,298 +1,37 @@
-<!-- templates/game/game.html -->
 <!DOCTYPE html>
 <html lang="ru">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Игра Alias - Комната {{ room.room_id }}</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            color: white;
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 500px;
-            margin: 0 auto;
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .room-id {
-            font-size: 1.2em;
-            color: #ffd700;
-            margin: 10px 0;
-        }
-
-        .scores {
-            display: flex;
-            justify-content: space-around;
-            margin: 20px 0;
-        }
-
-        .score {
-            text-align: center;
-            padding: 15px;
-            border-radius: 10px;
-            min-width: 120px;
-        }
-
-        .score-a {
-            background: rgba(255, 107, 107, 0.2);
-            border: 2px solid #ff6b6b;
-        }
-
-        .score-b {
-            background: rgba(77, 150, 255, 0.2);
-            border: 2px solid #4d96ff;
-        }
-
-        .score-value {
-            font-size: 2em;
-            font-weight: bold;
-            margin: 5px 0;
-        }
-
-        .target {
-            font-size: 0.8em;
-            opacity: 0.8;
-        }
-
-        .current-team {
-            background: rgba(255, 215, 0, 0.2);
-            border: 2px solid #ffd700;
-            padding: 15px;
-            border-radius: 15px;
-            text-align: center;
-            margin: 20px 0;
-            font-size: 1.2em;
-        }
-
-        .players-info {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 15px;
-            border-radius: 15px;
-            margin: 20px 0;
-        }
-
-        .player-role {
-            display: flex;
-            justify-content: space-between;
-            margin: 10px 0;
-            padding: 10px;
-            border-radius: 8px;
-        }
-
-        .explainer {
-            background: rgba(255, 107, 107, 0.2);
-            border-left: 4px solid #ff6b6b;
-        }
-
-        .guesser {
-            background: rgba(77, 150, 255, 0.2);
-            border-left: 4px solid #4d96ff;
-        }
-
-        .word-container {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 40px 20px;
-            margin: 30px 0;
-            text-align: center;
-            min-height: 200px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .word {
-            font-size: 3em;
-            font-weight: bold;
-            margin: 20px 0;
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
-            min-height: 1.2em;
-        }
-
-        .timer {
-            font-size: 4em;
-            font-weight: bold;
-            text-align: center;
-            margin: 20px 0;
-            font-family: monospace;
-        }
-
-        .controls {
-            display: flex;
-            gap: 10px;
-            margin: 20px 0;
-        }
-
-        .btn {
-            flex: 1;
-            padding: 20px;
-            border: none;
-            border-radius: 15px;
-            font-size: 1.1em;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-align: center;
-        }
-
-        .btn-success {
-            background: #51cf66;
-            color: white;
-        }
-
-        .btn-primary {
-            background: #4d96ff;
-            color: white;
-        }
-
-        .btn-secondary {
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-        }
-
-        .btn-warning {
-            background: #ffc107;
-            color: #333;
-        }
-
-        .btn-danger {
-            background: #ff6b6b;
-            color: white;
-        }
-
-        .btn:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-        }
-
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .message {
-            padding: 15px;
-            border-radius: 10px;
-            margin: 15px 0;
-            text-align: center;
-            display: none;
-        }
-
-        .error {
-            background: rgba(255, 107, 107, 0.2);
-            color: #ff6b6b;
-            border: 1px solid #ff6b6b;
-        }
-
-        .success {
-            background: rgba(81, 207, 102, 0.2);
-            color: #51cf66;
-            border: 1px solid #51cf66;
-        }
-
-        .winner {
-            background: rgba(255, 215, 0, 0.2);
-            color: #ffd700;
-            border: 2px solid #ffd700;
-            padding: 30px;
-            border-radius: 20px;
-            text-align: center;
-            margin: 30px 0;
-            font-size: 1.5em;
-            display: none;
-        }
-
-        .waiting {
-            text-align: center;
-            padding: 40px 20px;
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 1.2em;
-        }
-
-        .instructions {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 15px;
-            border-radius: 10px;
-            margin: 20px 0;
-            font-size: 0.9em;
-            color: rgba(255, 255, 255, 0.8);
-        }
-
-        .back-btn {
-            display: inline-block;
-            margin-top: 20px;
-            padding: 10px 20px;
-            background: #4d96ff;
-            color: white;
-            text-decoration: none;
-            border-radius: 10px;
-            font-weight: 600;
-        }
-
-        @keyframes pulse {
-            0% {
-                transform: scale(1);
-            }
-
-            50% {
-                transform: scale(1.05);
-            }
-
-            100% {
-                transform: scale(1);
-            }
-        }
-
-        .pulse {
-            animation: pulse 1s infinite;
-        }
-    </style>
+    <link rel="stylesheet" href="/static/css/style.css">
 </head>
-
 <body>
     <div class="container">
         <div class="header">
             <h1>🎮 Alias</h1>
             <div class="room-id">Комната: {{ room.room_id }}</div>
         </div>
-
+        
         <div class="scores">
             <div class="score score-a">
                 <div>Команда A</div>
                 <div class="score-value" id="scoreA">0</div>
                 <div class="target">Цель: <span id="targetScore">25</span></div>
             </div>
-
+            
             <div class="score score-b">
                 <div>Команда B</div>
                 <div class="score-value" id="scoreB">0</div>
                 <div class="target">Цель: <span id="targetScore">25</span></div>
             </div>
         </div>
-
+        
         <div class="current-team" id="currentTeamInfo">
             Сейчас играет: <span id="currentTeam">Команда A</span>
         </div>
-
+        
         <div class="players-info">
             <div class="player-role explainer">
                 <span>Объясняет:</span>
@@ -303,23 +42,15 @@
                 <span id="guesserName">Загрузка...</span>
             </div>
         </div>
-
+        
         <div class="timer" id="timer">60</div>
-
+        
         <div class="word-container" id="wordContainer">
             <div class="word" id="currentWord">
                 <span id="wordText">Нажмите "Новое слово"</span>
             </div>
         </div>
-
-        <div class="instructions" id="gameInstructions">
-            <strong>🎯 Как играть:</strong><br>
-            • Объясняющий: объясняйте слово без однокоренных слов<br>
-            • Угадывающий: старайтесь понять слово по описанию<br>
-            • Нажмите "Верно!" если слово угадано (+1 очко)<br>
-            • Нажмите "Пропустить" если слово слишком сложное
-        </div>
-
+        
         <div class="controls" id="gameControls">
             <button class="btn btn-success" onclick="wordGuessed()" id="guessedBtn">
                 ✅ Верно!
@@ -328,90 +59,78 @@
                 ⏭️ Пропустить
             </button>
         </div>
-
+        
         <button class="btn btn-warning" onclick="getNewWord()" id="newWordBtn">
             🔄 Новое слово
         </button>
-
+        
         <button class="btn btn-secondary" onclick="nextTurn()" id="nextTurnBtn">
             ⏭️ Следующий ход
         </button>
-
+        
         <button class="btn btn-secondary" onclick="switchTeam()" id="switchTeamBtn">
             🔄 Сменить команду
         </button>
-
+        
         <a href="/room/{{ room.room_id }}/" class="back-btn">
             ← Назад в комнату
         </a>
-
+        
         <div class="winner" id="winnerMessage">
             <h2>🎉 Победила команда <span id="winnerTeam"></span>! 🎉</h2>
-            <p style="margin-top: 15px;">Счет: <span id="finalScore"></span></p>
-            <button class="btn btn-primary" onclick="location.reload()" style="margin-top: 20px;">
+            <p>Счет: <span id="finalScore"></span></p>
+            <button class="btn btn-primary" onclick="location.reload()">
                 🔄 Новая игра
             </button>
         </div>
-
+        
         <div class="message error" id="errorMessage"></div>
         <div class="message success" id="successMessage"></div>
-        <div id="room-data" data-room-id="{{ room.room_id }}" data-creator-id="{{ room_creator_id }}"
-            style="display: none;">
-        </div>
+        <div id="roomMeta" data-creator="{{ room.creator_id }}" style="display:none"></div>
     </div>
 
-        <script>
-        // Инициализация Telegram Web App
+    <script>
         let tg = window.Telegram.WebApp;
         tg.expand();
         
-        // Получаем данные пользователя
         const user = tg.initDataUnsafe?.user;
         let currentUser = null;
         
         if (user) {
             currentUser = {
                 id: user.id,
-                username: user.username || `User${user.id}`,
-                firstName: user.first_name || '',
-                lastName: user.last_name || ''
+                username: user.username || `User${user.id}`
             };
         } else {
-            // Для тестирования
             currentUser = {
                 id: Math.floor(Math.random() * 1000000),
                 username: 'TestUser'
             };
         }
         
-        // Получаем данные комнаты из data-атрибутов
-        const roomDataElement = document.getElementById('room-data');
-        const roomId = roomDataElement ? roomDataElement.dataset.roomId : '{{ room.room_id }}';
-        const roomCreatorId = roomDataElement ? parseInt(roomDataElement.dataset.creatorId) : 0;
-        
+        const roomId = '{{ room.room_id }}';
         let gameState = null;
         let timerInterval = null;
         let timeLeft = 60;
         let currentWord = null;
         let isExplainer = false;
-        let isCreator = currentUser && (currentUser.id === roomCreatorId);
+        const roomCreatorId = Number(document.getElementById('roomMeta').dataset.creator);
+        let isCreator = roomCreatorId === currentUser.id;
         
-        // Функции для сообщений
         function showError(message) {
-            const errorEl = document.getElementById('errorMessage');
-            errorEl.textContent = message;
-            errorEl.style.display = 'block';
-            setTimeout(() => errorEl.style.display = 'none', 5000);
+            const el = document.getElementById('errorMessage');
+            el.textContent = message;
+            el.style.display = 'block';
+            setTimeout(() => el.style.display = 'none', 5000);
         }
         
         function showSuccess(message) {
-            const successEl = document.getElementById('successMessage');
-            successEl.textContent = message;
-            successEl.style.display = 'block';
-            setTimeout(() => successEl.style.display = 'none', 3000);
+            const el = document.getElementById('successMessage');
+            el.textContent = message;
+            el.style.display = 'block';
+            setTimeout(() => el.style.display = 'none', 3000);
         }
         
-        // Таймер
         function startTimer() {
             clearInterval(timerInterval);
             timeLeft = 60;
@@ -433,20 +152,15 @@
             const timerEl = document.getElementById('timer');
             timerEl.textContent = timeLeft;
             
-            // Меняем цвет при малом времени
             if (timeLeft <= 10) {
                 timerEl.style.color = '#ff6b6b';
-                timerEl.classList.add('pulse');
             } else if (timeLeft <= 30) {
                 timerEl.style.color = '#ffc107';
-                timerEl.classList.remove('pulse');
             } else {
                 timerEl.style.color = '#51cf66';
-                timerEl.classList.remove('pulse');
             }
         }
         
-        // Обновление состояния игры
         async function updateGameState() {
             try {
                 const response = await fetch(`/api/game-state/${roomId}/`);
@@ -455,87 +169,57 @@
                 if (data.success) {
                     gameState = data;
                     
-                    // Если игра не начата
                     if (!data.is_game_started) {
                         document.getElementById('wordContainer').innerHTML = 
-                            '<div class="waiting">Игра еще не началась. Вернитесь в комнату.</div>';
-                        document.getElementById('gameControls').style.display = 'none';
-                        document.getElementById('newWordBtn').style.display = 'none';
-                        document.getElementById('nextTurnBtn').style.display = 'none';
-                        document.getElementById('switchTeamBtn').style.display = 'none';
+                            '<div class="waiting">Игра еще не началась</div>';
                         return;
                     }
                     
-                    // Если есть победитель
                     if (data.winner) {
                         showWinner(data.winner);
                         return;
                     }
                     
-                    // Обновляем интерфейс
                     document.getElementById('scoreA').textContent = data.score_a;
                     document.getElementById('scoreB').textContent = data.score_b;
-                    document.getElementById('targetScore').textContent = data.target_score;
                     
                     const currentTeam = data.current_team === 'A' ? 'Команда A' : 'Команда B';
                     document.getElementById('currentTeam').textContent = currentTeam;
                     
-                    // Цвет текущей команды
-                    if (data.current_team === 'A') {
-                        document.getElementById('currentTeamInfo').style.borderColor = '#ff6b6b';
-                        document.getElementById('currentTeamInfo').style.background = 'rgba(255, 107, 107, 0.2)';
-                    } else {
-                        document.getElementById('currentTeamInfo').style.borderColor = '#4d96ff';
-                        document.getElementById('currentTeamInfo').style.background = 'rgba(77, 150, 255, 0.2)';
-                    }
-                    
-                    // Обновляем информацию об игроках
                     document.getElementById('explainerName').textContent = data.explainer.username;
                     document.getElementById('guesserName').textContent = data.guesser.username;
                     
-                    // Проверяем роль текущего пользователя
                     isExplainer = currentUser && (data.explainer.id === currentUser.id);
                     
-                    // isCreator уже установлен при загрузке страницы
-                    
-                    // Показываем/скрываем кнопки в зависимости от роли
                     const showControls = isExplainer;
                     document.getElementById('gameControls').style.display = showControls ? 'flex' : 'none';
                     document.getElementById('newWordBtn').style.display = showControls ? 'block' : 'none';
                     document.getElementById('nextTurnBtn').style.display = showControls ? 'block' : 'none';
                     document.getElementById('switchTeamBtn').style.display = isCreator ? 'block' : 'none';
                     
-                    // Если пользователь не объясняющий, показываем сообщение
                     if (!isExplainer) {
                         document.getElementById('wordContainer').innerHTML = 
-                            `<div class="waiting">⏳ Ждите, сейчас объясняет: <strong>${data.explainer.username}</strong></div>`;
-                        document.getElementById('gameInstructions').style.display = 'none';
-                    } else {
-                        document.getElementById('gameInstructions').style.display = 'block';
+                            `<div class="waiting">Ждите, сейчас объясняет: ${data.explainer.username}</div>`;
                     }
                     
-                    // Обновляем таймер
                     timeLeft = data.time_per_turn || 60;
                     updateTimerDisplay();
                 }
             } catch (error) {
-                console.error('Ошибка при обновлении состояния:', error);
+                console.error('Ошибка:', error);
             }
         }
         
-        // Получить новое слово
         async function getNewWord() {
             if (!isExplainer) {
-                showError('Сейчас не ваш ход для объяснения');
+                showError('Сейчас не ваш ход');
                 return;
             }
             
             try {
                 const response = await fetch('/api/get-word/', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
                         room_id: roomId,
                         user_id: currentUser.id
@@ -547,17 +231,16 @@
                 if (data.success) {
                     currentWord = data.word;
                     document.getElementById('wordText').textContent = currentWord;
-                    startTimer(); // Запускаем таймер при получении первого слова
-                    showSuccess('Новое слово! Объясняйте...');
+                    startTimer();
+                    showSuccess('Новое слово!');
                 } else {
-                    showError(data.error || 'Не удалось получить слово');
+                    showError(data.error);
                 }
             } catch (error) {
                 showError('Ошибка сети: ' + error.message);
             }
         }
         
-        // Слово угадано
         async function wordGuessed() {
             if (!isExplainer) {
                 showError('Сейчас не ваш ход');
@@ -572,9 +255,7 @@
             try {
                 const response = await fetch('/api/word-guessed/', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
                         room_id: roomId,
                         user_id: currentUser.id
@@ -584,17 +265,13 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    showSuccess('🎉 Отлично! +1 очко');
-                    
-                    // Обновляем счет
+                    showSuccess('Отлично! +1 очко');
                     document.getElementById('scoreA').textContent = data.score_a;
                     document.getElementById('scoreB').textContent = data.score_b;
                     
-                    // Проверяем победу
-                    if (data.score_a >= gameState.target_score || data.score_b >= gameState.target_score) {
+                    if (data.score_a >= 25 || data.score_b >= 25) {
                         updateGameState();
                     } else {
-                        // Получаем следующее слово
                         getNewWord();
                     }
                 }
@@ -603,7 +280,6 @@
             }
         }
         
-        // Пропустить слово
         async function skipWord() {
             if (!isExplainer) {
                 showError('Сейчас не ваш ход');
@@ -614,7 +290,6 @@
             getNewWord();
         }
         
-        // Следующий ход
         async function nextTurn() {
             if (!isExplainer) {
                 showError('Сейчас не ваш ход');
@@ -624,9 +299,7 @@
             try {
                 const response = await fetch('/api/next-turn/', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
                         room_id: roomId,
                         user_id: currentUser.id
@@ -642,27 +315,24 @@
                     clearInterval(timerInterval);
                     updateGameState();
                 } else {
-                    showError(data.error || 'Ошибка при смене хода');
+                    showError(data.error);
                 }
             } catch (error) {
                 showError('Ошибка: ' + error.message);
             }
         }
         
-        // Сменить команду
         async function switchTeam() {
             if (!isCreator) {
-                showError('Только создатель комнаты может сменить команду');
+                showError('Только создатель может сменить команду');
                 return;
             }
             
-            if (confirm('Сменить команду? Сейчас играет команда ' + gameState.current_team)) {
+            if (confirm('Сменить команду?')) {
                 try {
                     const response = await fetch('/api/switch-team/', {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
+                        headers: {'Content-Type': 'application/json'},
                         body: JSON.stringify({
                             room_id: roomId,
                             user_id: currentUser.id
@@ -684,33 +354,15 @@
             }
         }
         
-        // Показать победителя
         function showWinner(winnerTeam) {
-            document.getElementById('winnerTeam').textContent = winnerTeam === 'A' ? 'A 🏆' : 'B 🏆';
+            document.getElementById('winnerTeam').textContent = winnerTeam;
             document.getElementById('finalScore').textContent = 
                 `${gameState.score_a} : ${gameState.score_b}`;
             document.getElementById('winnerMessage').style.display = 'block';
-            
-            // Скрываем остальные элементы
-            document.querySelectorAll('.scores, .current-team, .players-info, .timer, .word-container, .controls, .btn, .instructions')
-                .forEach(el => el.style.display = 'none');
-            
-            // Показываем счет
-            document.querySelector('.scores').style.display = 'flex';
         }
         
-        // Обновляем состояние каждые 3 секунды
         updateGameState();
         setInterval(updateGameState, 3000);
-        
-        // Инициализация
-        document.addEventListener('DOMContentLoaded', function() {
-            // Проверяем, является ли пользователь объясняющим
-            if (isExplainer) {
-                showSuccess('Вы объясняющий! Получите первое слово.');
-            }
-        });
     </script>
 </body>
-
 </html>
