@@ -2,7 +2,7 @@ services:
   - type: web
     name: alias-game
     env: python
-    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
+    buildCommand: pip install -r requirements.txt
     startCommand: gunicorn alias_game.wsgi:application
     envVars:
       - key: DATABASE_URL
@@ -16,21 +16,6 @@ services:
       - key: TELEGRAM_BOT_TOKEN
         sync: false
     healthCheckPath: /
-    autoDeploy: true
-
-  - type: worker
-    name: alias-bot
-    env: python
-    buildCommand: pip install -r requirements.txt
-    startCommand: python bot.py
-    envVars:
-      - key: DATABASE_URL
-        fromDatabase:
-          name: alias-db
-          property: connectionString
-      - key: TELEGRAM_BOT_TOKEN
-        sync: false
-    autoDeploy: true
 
 databases:
   - name: alias-db
