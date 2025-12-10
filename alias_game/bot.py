@@ -1,13 +1,6 @@
 import os
 import sys
 import logging
-import environ
-from pathlib import Path
-
-# Инициализация environ
-env = environ.Env()
-
-BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Добавляем путь
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))

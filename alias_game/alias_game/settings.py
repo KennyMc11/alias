@@ -2,20 +2,16 @@ import os
 import environ
 import dj_database_url
 from pathlib import Path
+from dotenv import load_dotenv
 
-# Инициализация environ
-env = environ.Env()
+load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.getenv('SECRET_KEY', '12345678')
-DEBUG = False
-ALLOWED_HOSTS = [
-    'Kenny11.pythonanywhere.com',
-    'www.Kenny11.pythonanywhere.com',
-    '127.0.0.1',
-    'localhost',
-]
+# Безопасность
+SECRET_KEY = env('SECRET_KEY', default='django-insecure-dev-key')
+DEBUG = env.bool('DEBUG', default=False)
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1'])
 CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=[])
 
 # Приложения
@@ -62,10 +58,11 @@ WSGI_APPLICATION = 'alias_game.wsgi.application'
 
 # База данных
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.config(
+        default=env('DATABASE_URL', default='sqlite:///db.sqlite3'),
+        conn_max_age=600,
+        conn_health_checks=True,
+    )
 }
 
 # Кэш Redis
@@ -118,7 +115,7 @@ if not DEBUG:
     SECURE_HSTS_PRELOAD = True
 
 # Telegram Bot
-TELEGRAM_BOT_TOKEN = env('TELEGRAM_BOT_TOKEN', default='')
+TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN', default='')
 
 # WhiteNoise
 WHITENOISE_MAX_AGE = 31536000
