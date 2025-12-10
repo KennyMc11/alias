@@ -1,6 +1,13 @@
 import os
 import sys
 import logging
+import environ
+from pathlib import Path
+
+# Инициализация environ
+env = environ.Env()
+
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Добавляем путь
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -32,7 +39,7 @@ bot = telebot.TeleBot(TOKEN)
 @bot.message_handler(commands=['start', 'help'])
 def send_welcome(message):
     user = message.from_user
-    
+
     welcome_text = f"""
 👋 Привет, {user.first_name}!
 
@@ -40,14 +47,14 @@ def send_welcome(message):
 
 ✨ Чтобы начать игру, нажмите кнопку ниже:
 """
-    
+
     keyboard = types.InlineKeyboardMarkup()
     web_app = types.WebAppInfo(url=f"https://{settings.ALLOWED_HOSTS[0]}/")
     keyboard.add(types.InlineKeyboardButton(
-        text="🎮 Играть в Alias", 
+        text="🎮 Играть в Alias",
         web_app=web_app
     ))
-    
+
     bot.send_message(
         message.chat.id,
         welcome_text,

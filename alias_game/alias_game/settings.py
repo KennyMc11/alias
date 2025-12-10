@@ -6,13 +6,16 @@ from pathlib import Path
 # Инициализация environ
 env = environ.Env()
 
-# Базовый путь
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Безопасность
-SECRET_KEY = env('SECRET_KEY', default='django-insecure-dev-key')
-DEBUG = env.bool('DEBUG', default=False)
-ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1'])
+SECRET_KEY = os.getenv('SECRET_KEY', '12345678')
+DEBUG = False
+ALLOWED_HOSTS = [
+    'Kenny11.pythonanywhere.com',
+    'www.Kenny11.pythonanywhere.com',
+    '127.0.0.1',
+    'localhost',
+]
 CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=[])
 
 # Приложения
@@ -59,11 +62,10 @@ WSGI_APPLICATION = 'alias_game.wsgi.application'
 
 # База данных
 DATABASES = {
-    'default': dj_database_url.config(
-        default=env('DATABASE_URL', default='sqlite:///db.sqlite3'),
-        conn_max_age=600,
-        conn_health_checks=True,
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
 }
 
 # Кэш Redis
@@ -97,9 +99,9 @@ USE_I18N = True
 USE_TZ = True
 
 # Статические файлы
-STATIC_URL = 'static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_DIRS = [BASE_DIR / 'static']
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATICFILES_DIRS = [BASE_DIR / 'staticfiles']
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Медиа файлы
@@ -111,9 +113,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Безопасность для продакшена
 if not DEBUG:
-    SECURE_SSL_REDIRECT = True
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
     SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
