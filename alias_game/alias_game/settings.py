@@ -9,10 +9,18 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Безопасность
-SECRET_KEY = env('SECRET_KEY', default='django-insecure-dev-key')
-DEBUG = env.bool('DEBUG', default=False)
-ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1'])
-CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=[])
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-dev-key')
+DEBUG = os.getenv('DEBUG', 'False').lower() in ('true', '1', 't', 'yes', 'y')
+ALLOWED_HOSTS = [host.strip() for host in os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',') if host.strip()]
+cs_host = os.getenv('CODESPACE_NAME')
+if cs_host:
+    cs_domain = f"{cs_host}-8000.app.github.dev"
+    ALLOWED_HOSTS.append(cs_domain)
+    CSRF_TRUSTED_ORIGINS = [f"https://{cs_domain}"]
+else:
+    # Обрабатываем CSRF_TRUSTED_ORIGINS из переменной окружения
+    csrf_origins = os.getenv('CSRF_TRUSTED_ORIGINS', '')
+    CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in csrf_origins.split(',') if origin.strip()]
 
 # Приложения
 INSTALLED_APPS = [
@@ -59,7 +67,7 @@ WSGI_APPLICATION = 'alias_game.wsgi.application'
 # База данных
 DATABASES = {
     'default': dj_database_url.config(
-        default=env('DATABASE_URL', default='sqlite:///db.sqlite3'),
+        default=os.getenv('DATABASE_URL', default='sqlite:///db.sqlite3'),
         conn_max_age=600,
         conn_health_checks=True,
     )
